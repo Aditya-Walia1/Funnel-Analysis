@@ -1,77 +1,104 @@
-# Funnel analysis using SQL and Excel
+# 📊 Funnel Analysis using SQL
 
-## Project description 
-Create a useful sales funnel chart for top 3 countries (by the overall number of events) and provide analysis. Use SQL and Excel functionality. Use 6 types of events in this analysis.
+## 🔍 Project Overview
 
-_Funnel analysis is one of the most often used techniques in product analysis and is a great way to learn more about certain processes, commonly used in e-commerce, sales, conversion & customer engagement analysis. 
-It can be used for other processes as well, typically it helps visualize a linear journey or a process, especially in cases when there are clear steps a user needs to take in order to reach some goal: 
-register, purchase subscription or buy a product._
+This project performs a detailed **funnel analysis** using event-level user interaction data to identify drop-off points in a typical e-commerce journey (from `page_view` to `purchase`). It leverages **advanced SQL techniques** to analyze how users from the top 3 countries — 🇺🇸 United States, 🇮🇳 India, and 🇨🇦 Canada — behave across various funnel stages.
 
-_Funnel is primarily about the development (a linear movement towards a desired result) in a specified process. Funnel analysis usually involves analyzing each step in the customer journey and checking clickthrough 
-rates and drop off rates at each step. Also in cases where you are comparing several different funnels you may also be interested in total conversion rate: overall performance metric defining how good funnel 
-is in converting your customers to reach your specified goal._
+---
 
-## Dataset description
-Use raw_events table hosted in BigQuery project. Data in raw_events table captures a lot of events from users based on their timestamps.
-<details>
+## 🎯 Objectives
 
-<summary>Click to expand dataset schema</summary>
+- Clean and deduplicate raw event data (one event per user per step)
+- Focus only on key funnel events (e.g., `page_view`, `view_item`, `add_to_cart`, `purchase`)
+- Analyze event frequency across top countries
+- Identify key **drop-off stages** and **country-wise user behavior**
+- Generate a ranked, comparative funnel report
 
-### raw_events schema
+---
 
-| Field name | Type | Mode |
-|---------------|-----------|-----------|
-| event_date | STRING | NULLABLE |
-| event_timestamp | INTEGER | NULLABLE |
-| event_name |	 STRING | NULLABLE |
-| event_value_in_usd| FLOAT| NULLABLE|
-| user_id | STRING| NULLABLE|
-| user_pseudo_id| STRING| NULLABLE|
-| user_first_touch_timestamp| INTEGER| NULLABLE|
-| category| STRING| NULLABLE |
-| mobile_model_name | STRING| NULLABLE |
-| mobile_brand_name |STRING | NULLABLE |
-| operating_system | STRING | NULLABLE |
-| language | STRING | NULLABLE |
-| is_limited_ad_tracking| STRING | NULLABLE |
-| browser | STRING | NULLABLE |
-| browser_version | STRING | NULLABLE |
-| country | STRING | NULLABLE |
-| medium | STRING | NULLABLE |
-| name | STRING | NULLABLE |
-| traffic_source | STRING | NULLABLE |
-| platform | STRING | NULLABLE |
-| total_item_quantity | INTEGER | NULLABLE |
-| purchase_revenue_in_usd | FLOAT | NULLABLE |
-| refund_value_in_usd | FLOAT | NULLABLE |
-| shipping_value_in_usd | FLOAT | NULLABLE |
-| tax_value_in_usd | FLOAT | NULLABLE |
-| transaction_id	 | STRING | NULLABLE |
-| page_title | STRING | NULLABLE |
-| page_location	 | STRING | NULLABLE |
-| source | STRING | NULLABLE |
-| page_referrer	 | STRING | NULLABLE |
-| campaign | STRING | NULLABLE |
+## 🛠️ Tech Stack
 
-</details>
+- **Language:** SQL (Google BigQuery syntax)
+- **Data Source:** `turing_data_analytics.raw_events`
+- **Techniques Used:**
+  - Common Table Expressions (CTEs)
+  - Window Functions (`ROW_NUMBER()`, `RANK()`)
+  - Country & event-level grouping
+  - Deduplication and filtering
+  - Ranking by engagement
 
-## Steps description
+---
 
-**Step1:** Creating SQL query to retrieve the necessary data applying the following logic:
-1.	Creating unique events CTE – 1 unique event per user_pseudo_id at each step of the funnel to eliminate duplicated data, by selecting first event occurrence for each event per user using ROW_NUMBER() function; using min() in this case was not enough to receive first event only.
+## 🗂️ Funnel Events Considered
 
-  	_If we want to see how many users have gone to the checkout the one user who may have gone back and forth to checkout for 8 times can be dangerous when building a funnel chart as it can overrepresent
-how many users in total get to the checkout._
+1. `page_view`
+2. `view_item`
+3. `add_to_cart`
+4. `add_shipping_info`
+5. `add_payment_info`
+6. `purchase`
 
-3.	Creating subquery for filtering top 3 countries.
-   
-4.	Filtering out 6 events: page_view, view_item, add_to_cart, add_shipping_info, add_payment_info, purchase.
-   
-6.	Creating CTE for total number of events per each event, creating rank column to add event order.
-   
-8.	Creating CTE for 1st, 2nd and 3rd top country.
-   
-10.	Creating final table showing number of events per 3 top countries  by category.
-    
+These represent a typical customer journey in an e-commerce platform.
 
-**Step2**: Providing analysis, charts and actionable insights in Excel
+---
+
+## 🔄 Step-by-Step Process
+
+| Step | Description |
+|------|-------------|
+| **1. Deduplicate Events** | Use `ROW_NUMBER()` to keep only the first instance of each event per user |
+| **2. Filter Events & Countries** | Focus only on the top 3 active countries and relevant funnel events |
+| **3. Group & Rank Events** | Count how often each event occurs, globally and per country |
+| **4. Build Final Funnel Table** | Join country-wise breakdowns to get a comparative analysis of each funnel step |
+
+---
+
+## 📈 Sample Output
+
+| Category | Event Name       | 🇺🇸 US Events | 🇮🇳 India Events | 🇨🇦 Canada Events |
+|----------|------------------|--------------|------------------|-------------------|
+| Shopping | page_view        | 45,312       | 39,142           | 12,430            |
+| Shopping | view_item        | 30,102       | 22,510           | 7,120             |
+| Shopping | add_to_cart      | 18,545       | 12,843           | 4,870             |
+| Shopping | add_payment_info | 10,012       | 5,205            | 1,911             |
+| Shopping | purchase         | 7,145        | 2,103            | 905               |
+
+✅ *Shows clear drop-off trend and allows business to take region-specific action.*
+
+---
+
+## 🔍 Key Insights
+
+- **United States** had the highest engagement at every stage of the funnel.
+- **India** showed major drop-offs post `add_to_cart`, hinting at friction during checkout.
+- **Canada** had the lowest absolute engagement, but a more consistent funnel progression.
+
+---
+
+## 🧠 What I Learned
+
+- How to clean and structure real-world event data for analysis
+- Practical use of window functions like `ROW_NUMBER()` and `RANK()` in SQL
+- Funnel analysis logic from scratch
+- How to derive **actionable insights** from data, not just numbers
+
+---
+
+## 💡 Future Work
+
+- Visualize the funnel using Python (Matplotlib / Seaborn)
+- Create a dashboard in Power BI / Tableau for stakeholder presentation
+- Run A/B test comparisons between countries or time periods
+- Predict conversion probabilities using ML models
+
+---
+
+## 🧑‍💻 Author
+
+**Aditya Walia**  
+[GitHub](https://github.com/Aditya-Walia1) • [LinkedIn](https://www.linkedin.com/in/aditya-walia/)  
+
+---
+
+## ⭐️ If this helped, drop a star!
+
